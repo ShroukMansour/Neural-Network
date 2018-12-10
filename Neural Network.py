@@ -1,11 +1,16 @@
 import numpy as np
 np.random.seed(100)
 
+# k -> # of samples
+# m -> # of features
+# L -> # of hidden nodes
+# n -> # of outputs
 
 class NeuralNetwork:
-    def __init__(self, m, l, n):
+    def __init__(self, m, l, n, learning_rate = 0.3):
         self.hidden_weights = np.random.rand(m, l)
         self.output_weights = np.random.rand(l, n)
+        self.learning_rate = learning_rate
 
     def feed_forward(self, x_train):
         hidden_layer_values = np.dot(x_train, self.hidden_weights) # (k*m).(m*L) = k*L
@@ -13,7 +18,12 @@ class NeuralNetwork:
         return output
 
     def feed_backward(self, x_train, y_train):
-        pass
+        o = self.feed_forward(x_train).T  # k*n
+        delta = y_train - o  # k*n
+        delta_o = o*(1-o)*delta # k*n
+        new_output_weights = self.output_weights + self.learning_rate*self.hidden_output.T.dot(delta_o) # L*n + (1*1).(L*k).(k*n) = L*n
+
+
 
     def calc_mse(self, yt, yp):
         return sum((yt - yp)**2)
