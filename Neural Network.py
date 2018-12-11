@@ -1,3 +1,5 @@
+import pickle
+
 import numpy as np
 np.random.seed(100)
 
@@ -7,8 +9,8 @@ np.random.seed(100)
 # n -> # of outputs
 
 class NeuralNetwork:
-    def __init__(self, m, l, n, learning_rate = 0.3):
-        self.hidden_weights = np.random.rand(m, l)
+    def __init__(self, m, l, n, learning_rate = 0.001):
+        self.hidden_weights = np.random.rand(m, l)*10 + (-5)
         self.output_weights = np.random.rand(l, n)
         self.hidden_layer_values = None
         self.learning_rate = learning_rate
@@ -19,7 +21,7 @@ class NeuralNetwork:
         hidden_layer_values = self.activation_funcv(hidden_layer_values)
         self.hidden_layer_values = np.array(hidden_layer_values)
         output = np.dot(hidden_layer_values, self.output_weights)  # (k*L).(L*n) = k*n
-        output = self.activation_funcv(output)
+        # output = self.activation_funcv(output)
         return output
 
     def feed_backward(self, x_train, y_train, iterations_num, error_threshold):
@@ -27,9 +29,9 @@ class NeuralNetwork:
             o = self.feed_forward(x_train)  # k*n
             delta = y_train - o  # k*n
             error = self.calc_mse(delta)
-            print(error)
+            # print(error)
             if any(error > error_threshold):
-                delta_o = o*(1-o)*delta # k*n
+                delta_o = delta # k*n
                 # L*n = L*n + (1*1).(L*k).(k*n)
                 new_output_weights = self.output_weights + self.learning_rate*self.hidden_layer_values.T.dot(delta_o)
                 # k*L  = ((k*L) * (k*L))* (k*n).(n*L)
@@ -40,6 +42,8 @@ class NeuralNetwork:
                 self.output_weights = new_output_weights
             else:
                 break
+
+
 
 
 
@@ -64,11 +68,17 @@ for i in range(k):
 
 x_train = np.array(x_train)
 y_train = np.array(y_train)
-y_train = y_train/np.max(y_train, axis=0)
+# y_train = y_train/np.max(y_train, axis=0)
 x_train = x_train/np.max(x_train, axis=0)
 model = NeuralNetwork(m, l, n)
 yp = model.feed_forward(x_train)
 mse = model.calc_mse(y_train - yp)
 print("Error before back probagation: " , str(mse))
-model.feed_backward(x_train, y_train, 1000, 0.00001)
-# print("Error after back probagation: " , str(mse))
+model.feed_backward(x_train, y_train, 1000, 0.1)
+yp = model.feed_forward(x_train)
+mse = model.calc_mse(y_train - yp)
+print("Error after back probagation: " , str(mse))
+
+with open('weights', 'wb') as f:
+    pickle.dump([model.hidden_weights, model.output_weights], f)
+
